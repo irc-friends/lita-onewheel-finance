@@ -68,7 +68,7 @@ class AlphaVantageQuote
 end
 
 class WorldTradeDataQuote
-  attr_reader :open, :high, :low, :price, :volume, :trading_day, :prev_close, :change, :change_percent, :exchange, :error
+  attr_reader :open, :high, :low, :price, :volume, :trading_day, :prev_close, :change, :change_percent, :exchange, :error, :name
   attr_accessor :symbol
 
   def initialize(json_blob)
@@ -108,6 +108,8 @@ class WorldTradeDataQuote
         @change_percent = self.fix_number quote[key]
       when 'stock_exchange_short'
         @exchange = quote[key].sub /NYSEARCA/, 'NYSE'
+      when 'name'
+        @name = quote[key]
       end
     end
   end
@@ -133,8 +135,10 @@ module Lita
           if stock.change >= 0
             # if irc
             str += "#{IrcColors::green} ⬆$#{stock.change}#{IrcColors::reset}, #{IrcColors::green}#{stock.change_percent}%#{IrcColors::reset} "
+            str += "#{IrcColors::grey}(#{stock.name})#{IrcColors::reset}"
           else
             str += "#{IrcColors::red} ↯$#{stock.change}#{IrcColors::reset}, #{IrcColors::red}#{stock.change_percent}%#{IrcColors::reset} "
+            str += "(#{stock.name})"
           end
         end
 
