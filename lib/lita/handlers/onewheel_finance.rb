@@ -10,22 +10,29 @@ module Lita
       config :apikey, required: true
       config :mode, default: 'irc'
       config :handler, default: 'alphavantage'
-      route /qu*o*t*e*\s+(.+)/i, :handle_quote, command: true
+      route(/qu*o*t*e*\s+(.+)/i, :handle_quote, command: true)
       # route /q2\s+(.+)/i, :handle_alphavantage, command: true
 
       def handle_quote(response)
-        stock = nil
-        if config.handler == 'worldtradedata'
-          stock = handle_world_trade_data response.matches[0][0]
+        response.matches[0][0].split.each { |sym| handle_symbol(sym, response) }
+      end
+
+      def handle_symbol(symbol, response)
+        stock = if config.handler == 'worldtradedata'
+          handle_world_trade_data(symbol)
         elsif config.handler == 'alphavantage'
-          stock = handle_alphavantage response.matches[0][0]
+          handle_alphavantage(symbol)
         elsif config.handler == 'yahoo'
-          stock = handle_yahoo response.matches[0][0]
+          handle_yahoo(symbol)
         else
           Lita.logger.error "Unknown/missing config.handler #{config.handler}.  Try 'worldtradedata' or 'alphavantage'"
           return
         end
 
+        reply(stock, response)
+      end
+
+      def reply(stock, response)
         # Continue!
         if stock.error
           if stock.message
@@ -41,15 +48,15 @@ module Lita
 
           # IRC mode
           if config.mode == 'irc'
-            str = "#{IrcColors::grey}#{stock.exchange} - #{IrcColors::reset}#{stock.symbol}: #{IrcColors::blue}#{dollar_sign}#{"%.2f" % stock.price}#{IrcColors::reset} "
+            str = " #{stock.symbol}: #{dollar_sign}#{"%.2f" % stock.price} "
             if stock.change >= 0
               # if irc
-              str += "#{IrcColors::green} ⬆#{dollar_sign}#{"%.2f" % stock.change}#{IrcColors::reset}, #{IrcColors::green}#{stock.change_percent}%#{IrcColors::reset} "
+              str += "#{IrcColors::green} #{dollar_sign}#{"%.2f" % stock.change}#{IrcColors::reset}, #{IrcColors::green}#{stock.change_percent}%#{IrcColors::reset} "
               if stock.name
                 str += "#{IrcColors::grey}(#{stock.name})#{IrcColors::reset}"
               end
             else
-              str += "#{IrcColors::red} ↯#{dollar_sign}#{"%.2f" % stock.change}#{IrcColors::reset}, #{IrcColors::red}#{stock.change_percent}%#{IrcColors::reset} "
+              str += "#{IrcColors::red} #{dollar_sign}#{"%.2f" % stock.change}#{IrcColors::reset}, #{IrcColors::red}#{stock.change_percent}%#{IrcColors::reset} "
               if stock.name
                 str += "#{IrcColors::grey}(#{stock.name})#{IrcColors::reset}"
               end
