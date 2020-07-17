@@ -10,7 +10,7 @@ module Lita
       config :apikey, required: true
       config :mode, default: 'irc'
       config :handler, default: 'alphavantage'
-      route(/qu*o*t*e*\s+(.+)/i, :handle_quote, command: true)
+      route(/^qu*o*t*e*\s+(.+)/i, :handle_quote, command: true)
       # route /q2\s+(.+)/i, :handle_alphavantage, command: true
 
       def handle_quote(response)
