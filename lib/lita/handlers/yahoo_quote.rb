@@ -32,7 +32,7 @@ class YahooQuote
       # when "08. previous close"
     @prev_close = self.fix_number quote['previousClose']
     @change = self.fix_number @price - @prev_close
-    @change_percent = self.fix_number ((@change / @price) * 100)
+    @change_percent = self.fix_number ((@change / @prev_close) * 100)
   end
 
   def fix_number(price_str)
