@@ -1,6 +1,10 @@
+require 'erb'
+
 class YahooQuote
   attr_reader :open, :high, :low, :price, :volume, :trading_day, :prev_close, :change, :change_percent, :exchange, :error, :name, :message, :is_index
   attr_accessor :symbol
+
+  include ERB::Util
 
   def initialize(symbol, apikey)
     # Lita.logger.debug "parsing: #{json_blob}"
@@ -44,7 +48,7 @@ class YahooQuote
   end
 
   def call_api
-    url = "https://query1.finance.yahoo.com/v8/finance/chart/#{@symbol}"
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/#{url_encode(@symbol)}"
     Lita.logger.debug "#{url}"
     response = RestClient.get url
 
