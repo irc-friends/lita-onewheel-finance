@@ -11,10 +11,14 @@ module Lita
       config :mode, default: 'irc'
       config :handler, default: 'alphavantage'
       route(/^qu*o*t*e*\s+(.+)/i, :handle_quote, command: true)
-      # route /q2\s+(.+)/i, :handle_alphavantage, command: true
+      route(/^mm/i, :handle_mm, command: true)
 
       def handle_quote(response)
         response.matches[0][0].split.each { |sym| handle_symbol(sym, response) }
+      end
+
+      def handle_mm(response)
+        %w(^spx ^vix).each { |sym| handle_symbol(sym, response) }
       end
 
       def handle_symbol(symbol, response)
